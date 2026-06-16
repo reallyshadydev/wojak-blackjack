@@ -1,0 +1,17 @@
+node_modules/
+dist/
+*.log
+
+# House wallet — contains the private key (WIF). NEVER commit.
+server/data/house-wallet.json
+
+# Player balances / round history / revealed seeds.
+server/data/state.json
+
+# Local env
+.env
+server/.env
+web/.env
+
+# Local editor/preview tooling
+.claude/

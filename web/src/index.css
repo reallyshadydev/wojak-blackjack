@@ -1,0 +1,192 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: "Inter", system-ui, sans-serif;
+  color: #f3f1e9;
+  background:
+    radial-gradient(1200px 700px at 50% -10%, #123a26 0%, #0a1c13 45%, #060d09 100%);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ------- Casino felt table ------- */
+.felt {
+  background:
+    radial-gradient(115% 85% at 50% 12%, #1aa85f 0%, #128a4a 38%, #0b6b39 66%, #075127 100%);
+  box-shadow: inset 0 0 140px rgba(0, 30, 12, 0.5), inset 0 0 0 2px rgba(232, 196, 104, 0.22),
+    0 24px 60px rgba(0, 0, 0, 0.55);
+}
+.felt::before {
+  content: "";
+  position: absolute;
+  inset: 14px;
+  border-radius: inherit;
+  border: 2px solid rgba(232, 196, 104, 0.22);
+  pointer-events: none;
+}
+.felt-noise {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.035'/%3E%3C/svg%3E");
+}
+
+.arc-text {
+  color: rgba(246, 227, 161, 0.55);
+  letter-spacing: 0.32em;
+}
+
+/* ------- Playing cards ------- */
+.card {
+  width: var(--cw, 76px);
+  height: calc(var(--cw, 76px) * 1.4);
+  border-radius: 9px;
+  position: relative;
+  background: linear-gradient(160deg, #fffdf7, #f1ece0);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45), 0 1px 2px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  user-select: none;
+  font-family: "Inter", sans-serif;
+}
+.card.red {
+  color: #d4233a;
+}
+.card.black {
+  color: #16181d;
+}
+.card .corner {
+  position: absolute;
+  font-weight: 800;
+  line-height: 0.9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: calc(var(--cw, 76px) * 0.21);
+}
+.card .corner.tl {
+  top: 6px;
+  left: 7px;
+}
+.card .corner.br {
+  bottom: 6px;
+  right: 7px;
+  transform: rotate(180deg);
+}
+.card .pip {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: calc(var(--cw, 76px) * 0.52);
+  line-height: 1;
+}
+.card-back {
+  background:
+    repeating-linear-gradient(45deg, #1d4ed8 0 8px, #1640b8 8px 16px),
+    linear-gradient(160deg, #2b5bdc, #15307f);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+}
+.card-back::after {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border-radius: 6px;
+  border: 2px dashed rgba(255, 255, 255, 0.35);
+}
+.card-back .crest {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: calc(var(--cw, 76px) * 0.5);
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
+}
+
+/* ------- Chips ------- */
+.chip {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 13px;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.35), inset 0 0 0 3px rgba(255, 255, 255, 0.18);
+  background-image: repeating-conic-gradient(
+    var(--c1) 0deg 18deg,
+    var(--c2) 18deg 36deg
+  );
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  position: relative;
+}
+.chip:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.35), inset 0 0 0 3px rgba(255, 255, 255, 0.25);
+}
+.chip::after {
+  content: "";
+  position: absolute;
+  inset: 9px;
+  border-radius: 50%;
+  border: 2px dashed rgba(255, 255, 255, 0.45);
+}
+.chip span {
+  z-index: 1;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+}
+
+/* ------- Action buttons ------- */
+.btn-action {
+  position: relative;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  border-radius: 999px;
+  padding: 12px 22px;
+  transition: transform 0.1s ease, box-shadow 0.15s ease, opacity 0.15s;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+.btn-action:not(:disabled):hover {
+  transform: translateY(-2px);
+}
+.btn-action:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.glass {
+  background: rgba(10, 20, 14, 0.55);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(232, 196, 104, 0.16);
+}
+
+/* gold text gradient for the wordmark */
+.gold-text {
+  background: linear-gradient(180deg, #f8eab4 0%, #e8c468 45%, #b8923a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(232, 196, 104, 0.25);
+  border-radius: 8px;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}

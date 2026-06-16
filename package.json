@@ -1,0 +1,17 @@
+{
+  "name": "wojak-blackjack",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Provably-fair on-chain blackjack for WojakCoin (WJK)",
+  "type": "module",
+  "scripts": {
+    "setup": "npm --prefix server install && npm --prefix web install && npm run generate-wallet",
+    "generate-wallet": "npm --prefix server run generate-wallet",
+    "server": "npm --prefix server run dev",
+    "web": "npm --prefix web run dev",
+    "dev": "node scripts/dev.mjs",
+    "build": "npm --prefix web run build",
+    "start": "npm --prefix server start"
+  },
+  "license": "MIT"
+}
