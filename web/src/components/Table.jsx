@@ -1,5 +1,6 @@
 import Hand from "./Hand.jsx";
 import { fmtWJK } from "../lib/format.js";
+import { formatBlackjackPays, formatTableRules } from "../lib/rules.js";
 
 function Shoe() {
   return (
@@ -17,7 +18,7 @@ function Shoe() {
   );
 }
 
-export default function Table({ round, phase, lastNet }) {
+export default function Table({ round, phase, lastNet, rules }) {
   const activeIndex = round?.awaiting?.index;
 
   return (
@@ -65,9 +66,11 @@ export default function Table({ round, phase, lastNet }) {
             </div>
           ) : (
             <>
-              <div className="arc-text font-display text-base sm:text-lg">BLACKJACK PAYS 3 TO 2</div>
+              <div className="arc-text font-display text-base sm:text-lg">
+                BLACKJACK PAYS {formatBlackjackPays(rules?.blackjackPays ?? 1.5)}
+              </div>
               <div className="my-2 h-px w-2/3 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
-              <div className="arc-text text-[10px] sm:text-xs">DEALER MUST STAND ON 17 · INSURANCE NOT OFFERED</div>
+              <div className="arc-text text-[10px] sm:text-xs">{formatTableRules(rules)}</div>
             </>
           )}
         </div>

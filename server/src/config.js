@@ -53,6 +53,10 @@ export const config = {
   rules: {
     ...DEFAULT_RULES,
     dealerHitsSoft17: bool(process.env.DEALER_HITS_SOFT17, DEFAULT_RULES.dealerHitsSoft17),
+    blackjackPays: num(process.env.BLACKJACK_PAYS, DEFAULT_RULES.blackjackPays),
+    maxSplits: num(process.env.MAX_SPLITS, DEFAULT_RULES.maxSplits),
+    doubleAfterSplit: bool(process.env.DOUBLE_AFTER_SPLIT, DEFAULT_RULES.doubleAfterSplit),
+    oneCardAfterSplitAce: bool(process.env.ONE_CARD_AFTER_SPLIT_ACE, DEFAULT_RULES.oneCardAfterSplitAce),
   },
 
   corsOrigin: process.env.CORS_ORIGIN ?? "*",

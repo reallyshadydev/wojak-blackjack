@@ -86,6 +86,7 @@ function settle(player, round, state) {
     anchor: round.anchor,
     anchorTxid: round.anchorTxid,
     epochLength: round.epochLength,
+    rules: config.rules,
     finishedAt: new Date().toISOString(),
   });
 }

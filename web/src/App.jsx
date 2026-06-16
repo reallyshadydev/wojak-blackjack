@@ -172,7 +172,7 @@ export default function App() {
 
       <main className="mx-auto grid max-w-6xl gap-6 px-4 py-6 lg:grid-cols-[1fr_340px]">
         <section className="flex flex-col gap-6">
-          <Table round={round} phase={phase} lastNet={finished ? round.net : 0} />
+          <Table round={round} phase={phase} lastNet={finished ? round.net : 0} rules={config?.rules} />
 
           <div className="glass rounded-2xl p-5">
             <Controls
