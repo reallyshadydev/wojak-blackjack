@@ -1,0 +1,19 @@
+[Unit]
+Description=WojakCoin Blackjack (provably-fair house server + web app)
+Documentation=https://github.com/reallyshadydev/wojak-blackjack
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/wojak-blackjack
+EnvironmentFile=/root/wojak-blackjack/server/.env
+Environment=NODE_ENV=production
+Environment=PATH=/root/.nvm/versions/node/v22.22.3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ExecStart=/root/.nvm/versions/node/v22.22.3/bin/node server/src/index.js
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

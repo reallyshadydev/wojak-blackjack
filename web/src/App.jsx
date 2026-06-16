@@ -9,7 +9,8 @@ import FairnessPanel from "./components/FairnessPanel.jsx";
 import Modal from "./components/Modal.jsx";
 import Toasts from "./components/Toasts.jsx";
 
-const EXTENSION_URL = "https://github.com/reallyshadydev/wojak-wallet-extension";
+const EXTENSION_URL =
+  "https://chromewebstore.google.com/detail/wojak-wallet/jgepofplloabbpjnidnmkpmjdikockkb";
 
 export default function App() {
   const [provider, setProvider] = useState(null);
@@ -59,7 +60,13 @@ export default function App() {
   const connect = useCallback(async () => {
     const p = provider || (await getWojakProvider());
     if (!p) {
-      toast({ tone: "error", title: "Wojak Wallet not found", body: "Install the extension and reload.", link: EXTENSION_URL });
+      window.open(EXTENSION_URL, "_blank", "noopener,noreferrer");
+      toast({
+        tone: "error",
+        title: "Wojak Wallet not found",
+        body: "Install the extension from the Chrome Web Store and reload.",
+        link: EXTENSION_URL,
+      });
       return;
     }
     setConnecting(true);
