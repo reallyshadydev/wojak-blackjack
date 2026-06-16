@@ -3,8 +3,12 @@
 
 import { config } from "./config.js";
 
-async function req(path, { method = "GET", body, headers } = {}) {
-  const res = await fetch(config.apiUrl + path, { method, body, headers });
+// 0.001 WJK outputs carry inscriptions; never spend them as funding (matches
+// wojak-wallet-extension). Fallback guard when the ord index briefly lags.
+export const CARRIER_SATS = 100_000;
+
+async function req(path, { method = "GET", body, headers, baseUrl = config.apiUrl } = {}) {
+  const res = await fetch(baseUrl + path, { method, body, headers });
   const text = await res.text();
   if (!res.ok) {
     throw new Error(`electrs ${method} ${path} -> ${res.status}: ${text.slice(0, 200)}`);
@@ -21,16 +25,52 @@ async function reqJson(path, opts) {
   }
 }
 
+async function ordJson(path) {
+  try {
+    const res = await fetch(config.ordUrl + path, {
+      headers: { Accept: "application/json" },
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
 /** Unspent outputs for an address: [{ txid, vout, value, status }]. */
 export function getUtxos(address) {
   return reqJson(`/address/${address}/utxo`);
 }
 
-/** Confirmed + mempool balance summary for an address (in sats). */
+/**
+ * Outpoints ("txid:vout") that currently hold an inscription, per the ord index.
+ * Authoritative list of outputs that must NOT be spent as plain funds.
+ */
+export async function getProtectedOutpoints(address) {
+  const res = await ordJson(`/address/${address}`);
+  return new Set(res?.outputs ?? []);
+}
+
+/**
+ * UTXOs safe to spend: excludes inscription-bearing outputs (ord) and 0.001 WJK
+ * carrier outputs, matching wojak-wallet-extension getSpendableUtxos().
+ */
+export async function getSpendableUtxos(address) {
+  const all = await getUtxos(address);
+  if (!Array.isArray(all)) return [];
+
+  const protectedOutpoints = await getProtectedOutpoints(address);
+  return all.filter(
+    (u) =>
+      !protectedOutpoints.has(`${u.txid}:${u.vout}`) &&
+      u.value !== CARRIER_SATS
+  );
+}
+
+/** Confirmed + mempool spendable balance (excludes inscription UTXOs). */
 export async function getAddressBalance(address) {
-  const utxos = await getUtxos(address).catch(() => []);
-  const total = (Array.isArray(utxos) ? utxos : []).reduce((s, u) => s + u.value, 0);
-  return total;
+  const utxos = await getSpendableUtxos(address).catch(() => []);
+  return utxos.reduce((s, u) => s + u.value, 0);
 }
 
 /** Raw transaction hex for a txid (needed as nonWitnessUtxo for legacy inputs). */

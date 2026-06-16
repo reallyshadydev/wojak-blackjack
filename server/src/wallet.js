@@ -8,7 +8,7 @@ import { ECPairFactory } from "ecpair";
 import * as ecc from "@bitcoinerlab/secp256k1";
 import { config } from "./config.js";
 import { networkFor } from "./network.js";
-import { getTxHex, getUtxos } from "./chain.js";
+import { getSpendableUtxos, getTxHex } from "./chain.js";
 
 const ECPair = ECPairFactory(ecc);
 const network = networkFor(config.network);
@@ -108,9 +108,11 @@ export async function buildFundedTx({ outputs, feeRate = config.feeRate }) {
 
   const spendSats = outputs.reduce((s, o) => s + (o.value || 0), 0);
 
-  const utxos = await getUtxos(h.address);
+  const utxos = await getSpendableUtxos(h.address);
   if (!Array.isArray(utxos) || utxos.length === 0) {
-    throw new Error("house wallet has no spendable UTXOs (fund it first)");
+    throw new Error(
+      "house wallet has no spendable UTXOs (fund it with plain WJK; inscription outputs are protected)"
+    );
   }
   utxos.sort((a, b) => b.value - a.value); // largest-first coin selection
 

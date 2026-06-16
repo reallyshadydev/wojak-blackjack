@@ -30,6 +30,12 @@ export const config = {
       ? "https://testnet.wojakcoin.cash/electrs"
       : "https://api.wojakcoin.cash"),
   explorerUrl: process.env.EXPLORER_URL ?? "https://explorer.wojakcoin.cash",
+  // ord index — lists outpoints that hold inscriptions (must not be spent as funds).
+  ordUrl:
+    process.env.ORD_URL ??
+    (network === "testnet"
+      ? "https://testnet.wojakcoin.cash/api/pub"
+      : "https://ord.wojakcoin.cash"),
 
   walletFile: process.env.HOUSE_WALLET_FILE ?? path.join(ROOT, "data", "house-wallet.json"),
   stateFile: process.env.STATE_FILE ?? path.join(ROOT, "data", "state.json"),
