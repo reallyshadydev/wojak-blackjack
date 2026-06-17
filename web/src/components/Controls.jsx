@@ -1,4 +1,5 @@
 import { fmtWJK, toWJK } from "../lib/format.js";
+import { sound } from "../lib/sounds.js";
 
 const CHIPS = [
   { v: 0.5, c1: "#475569", c2: "#94a3b8", label: "0.5" },
@@ -44,6 +45,7 @@ export default function Controls({
   evenMoney,
 }) {
   const addChip = (wjk) => {
+    sound.chip();
     const next = Math.min(betSats + wjk * 1e8, maxBetSats, balanceSats);
     setBetSats(Math.max(next, 0));
   };

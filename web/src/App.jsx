@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { getWojakProvider, isInstalled } from "./lib/wojak.js";
 import { api } from "./lib/api.js";
 import { fmtWJK, toWJK, formatInsuranceBreakdown } from "./lib/format.js";
+import { sound } from "./lib/sounds.js";
 import WalletBar from "./components/WalletBar.jsx";
 import Table from "./components/Table.jsx";
 import Controls from "./components/Controls.jsx";
@@ -29,6 +30,7 @@ export default function App() {
   const [toasts, setToasts] = useState([]);
   const [modal, setModal] = useState(null); // 'deposit' | 'withdraw'
   const [rulesOpen, setRulesOpen] = useState(false);
+  const [soundOn, setSoundOn] = useState(!sound.isMuted());
   const [lastSettled, setLastSettled] = useState(null);
 
   const prevFinishedId = useRef(null);
@@ -123,6 +125,10 @@ export default function App() {
       setLastSettled(r.fair);
       const net = r.net;
       const bj = r.hands.some((h) => h.result === "blackjack");
+      if (bj && net > 0) sound.blackjack();
+      else if (net > 0) sound.win();
+      else if (net < 0) sound.lose();
+      else sound.push();
       const breakdown = formatInsuranceBreakdown(r);
       toast({
         tone: net > 0 ? "win" : net < 0 ? "lose" : "info",
@@ -159,12 +165,15 @@ export default function App() {
 
   const deal = () =>
     guard(async () => {
+      sound.deal();
       const s = await api.startRound(address, betSats);
       setPlayer(s);
     });
 
   const act = (action) =>
     guard(async () => {
+      if (action === "hit" || action === "double") sound.deal();
+      else sound.click();
       const s = await api.action(address, action);
       setPlayer(s);
     });
@@ -212,6 +221,12 @@ export default function App() {
         onWithdraw={() => setModal("withdraw")}
         onDemo={playDemo}
         onRules={() => setRulesOpen(true)}
+        soundOn={soundOn}
+        onToggleSound={() => {
+          const m = sound.toggle();
+          setSoundOn(!m);
+          if (!m) sound.click();
+        }}
       />
 
       <main className="mx-auto grid min-h-0 w-full max-w-6xl flex-1 grid-cols-1 gap-3 px-3 pb-3 pt-2 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-4 lg:px-4">

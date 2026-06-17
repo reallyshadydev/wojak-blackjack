@@ -27,6 +27,8 @@ export default function WalletBar({
   onWithdraw,
   onDemo,
   onRules,
+  soundOn,
+  onToggleSound,
 }) {
   return (
     <header className="z-40 shrink-0 border-b border-gold/10 bg-black/40 backdrop-blur-md">
@@ -49,6 +51,14 @@ export default function WalletBar({
                 className="rounded-full border border-white/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white/60 hover:border-gold/50 hover:text-gold"
               >
                 Rules
+              </button>
+              <button
+                onClick={onToggleSound}
+                title={soundOn ? "Mute sound" : "Unmute sound"}
+                aria-label={soundOn ? "Mute sound" : "Unmute sound"}
+                className="grid h-5 w-5 place-items-center rounded-full border border-white/15 text-[10px] text-white/60 hover:border-gold/50 hover:text-gold"
+              >
+                {soundOn ? "🔊" : "🔇"}
               </button>
             </div>
           </div>
