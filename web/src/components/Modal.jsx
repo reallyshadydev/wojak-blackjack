@@ -1,4 +1,4 @@
-export default function Modal({ open, onClose, title, children }) {
+export default function Modal({ open, onClose, title, children, wide }) {
   if (!open) return null;
   return (
     <div
@@ -6,7 +6,7 @@ export default function Modal({ open, onClose, title, children }) {
       onClick={onClose}
     >
       <div
-        className="glass w-full max-w-md animate-floatUp rounded-2xl p-6 shadow-2xl"
+        className={`glass w-full animate-floatUp rounded-2xl p-6 shadow-2xl ${wide ? "max-w-2xl" : "max-w-md"}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between">

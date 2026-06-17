@@ -51,7 +51,7 @@ export default function WalletBar({
                 onClick={onRules}
                 className="rounded-full border border-white/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white/60 hover:border-gold/50 hover:text-gold"
               >
-                Rules
+                How to play
               </button>
               <button
                 onClick={onToggleSound}

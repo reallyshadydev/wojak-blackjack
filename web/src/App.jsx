@@ -295,6 +295,7 @@ export default function App() {
         rules={config?.rules}
         minBet={config ? fmtWJK(config.minBetSats) : null}
         maxBet={config ? fmtWJK(config.maxBetSats) : null}
+        demoMode={config?.demoMode}
       />
 
       <DepositWithdrawModals
