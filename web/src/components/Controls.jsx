@@ -1,4 +1,4 @@
-import { fmtWJK, toWJK } from "../lib/format.js";
+import { fmtWJK, fmtUsd, toWJK } from "../lib/format.js";
 import { sound } from "../lib/sounds.js";
 
 const CHIPS = [
@@ -43,6 +43,7 @@ export default function Controls({
   connected,
   insurance,
   evenMoney,
+  usdtPerWjk,
 }) {
   const addChip = (wjk) => {
     sound.chip();
@@ -53,10 +54,11 @@ export default function Controls({
   if (phase === "insurance") {
     const half = Math.floor(betSats / 2);
     const order = ["insurance", "no_insurance"];
+    const usd = (sats) => (usdtPerWjk != null ? ` / $${fmtUsd(sats, usdtPerWjk)}` : "");
     // Insurance offered to a player who already has blackjack IS "even money".
     const label = (a) => {
       if (evenMoney) return a === "insurance" ? "Even money (1:1)" : "Keep 3:2";
-      return a === "insurance" ? `${ACTION_LABEL[a]} (${fmtWJK(half)})` : ACTION_LABEL[a];
+      return a === "insurance" ? `${ACTION_LABEL[a]} (${fmtWJK(half)}${usd(half)})` : ACTION_LABEL[a];
     };
     return (
       <div className="flex flex-col items-center gap-2">
@@ -86,7 +88,10 @@ export default function Controls({
     return (
       <div className="flex flex-col items-center gap-2">
         {insurance?.taken && (
-          <div className="text-xs text-violet-300">Insurance {fmtWJK(insurance.stake)} WJK active</div>
+          <div className="text-xs text-violet-300">
+            Insurance {fmtWJK(insurance.stake)} WJK
+            {usdtPerWjk != null && <span className="text-white/40"> (${fmtUsd(insurance.stake, usdtPerWjk)})</span>}
+          </div>
         )}
         <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
         {order.map((a) => (
@@ -129,6 +134,9 @@ export default function Controls({
           <span className="text-[10px] uppercase tracking-wider text-white/40 sm:text-xs">Bet</span>
           <span className="tabular font-display text-xl text-gold sm:text-2xl">{fmtWJK(betSats)}</span>
           <span className="text-sm text-white/40">WJK</span>
+          {usdtPerWjk != null && (
+            <span className="text-xs text-white/40 sm:text-sm">${fmtUsd(betSats, usdtPerWjk)}</span>
+          )}
           {insurance?.taken && (
             <span className="text-xs text-violet-300 sm:text-sm">+ Ins {fmtWJK(insurance.stake)}</span>
           )}
@@ -158,7 +166,10 @@ export default function Controls({
       </div>
 
       {connected && betSats > 0 && betSats < minBetSats && (
-        <div className="text-xs text-amber-300/80">Minimum bet is {fmtWJK(minBetSats)} WJK</div>
+        <div className="text-xs text-amber-300/80">
+          Minimum bet is {fmtWJK(minBetSats)} WJK
+          {usdtPerWjk != null && ` ($${fmtUsd(minBetSats, usdtPerWjk)})`}
+        </div>
       )}
       {!connected && (
         <div className="text-xs text-white/40">Connect your Wojak Wallet to play</div>

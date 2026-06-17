@@ -8,6 +8,7 @@ import { startRound, applyAction, setClientSeed, viewRound, httpErr } from "./ga
 import { houseAddress, loadHouseWallet, decodeDepositToHouse, buildPayout } from "./wallet.js";
 import { broadcast, getAddressBalance, getTx } from "./chain.js";
 import { randomClientSeed, publicEpoch } from "./fair.js";
+import { getWjkUsdtPrice } from "./price.js";
 
 const app = express();
 app.use(cors({ origin: config.corsOrigin }));
@@ -64,6 +65,14 @@ function publicState(player) {
 }
 
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
+
+app.get(
+  "/api/price/wjk",
+  wrap(async (_req, res) => {
+    const usdtPerWjk = await getWjkUsdtPrice();
+    res.json({ usdtPerWjk, source: "nonkyc", pair: "WJK/USDT" });
+  })
+);
 
 app.get(
   "/api/config",

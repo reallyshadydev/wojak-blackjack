@@ -26,4 +26,5 @@ export const api = {
     call("/deposit", { method: "POST", body: { address, ...payload } }),
   withdraw: (address, amountSats) =>
     call("/withdraw", { method: "POST", body: { address, amountSats } }),
+  wjkPrice: () => call("/price/wjk"),
 };

@@ -13,6 +13,25 @@ export function fmtWJK(sats, maxFrac = 4) {
   return s;
 }
 
+/** USD equivalent for a WJK satoshi amount at the given USDT-per-WJK spot. */
+export function fmtUsd(sats, usdtPerWjk) {
+  if (!usdtPerWjk || !Number.isFinite(usdtPerWjk)) return null;
+  const usd = toWJK(sats) * usdtPerWjk;
+  if (!Number.isFinite(usd)) return null;
+  if (Math.abs(usd) >= 1000) {
+    return usd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  if (Math.abs(usd) >= 1) return usd.toFixed(2);
+  if (Math.abs(usd) >= 0.01) return usd.toFixed(2);
+  return usd.toFixed(4);
+}
+
+/** USD for a WJK float (deposit modal input). */
+export function fmtUsdFromWjk(wjk, usdtPerWjk) {
+  if (!usdtPerWjk || !Number.isFinite(usdtPerWjk) || !Number.isFinite(wjk)) return null;
+  return fmtUsd(Math.round(wjk * SATS), usdtPerWjk);
+}
+
 export const truncate = (addr, n = 5) =>
   addr ? `${addr.slice(0, n)}…${addr.slice(-4)}` : "";
 

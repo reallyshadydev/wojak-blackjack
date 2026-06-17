@@ -1,5 +1,5 @@
 import Hand from "./Hand.jsx";
-import { fmtWJK, formatInsuranceBreakdown } from "../lib/format.js";
+import { fmtWJK, fmtUsd, formatInsuranceBreakdown } from "../lib/format.js";
 import { formatBlackjackPays, formatTableRules } from "../lib/rules.js";
 import { useCardSizes } from "../hooks/useViewport.js";
 
@@ -20,7 +20,7 @@ function Shoe({ compact }) {
   );
 }
 
-export default function Table({ round, phase, lastNet, rules }) {
+export default function Table({ round, phase, lastNet, rules, usdtPerWjk }) {
   const activeIndex = round?.awaiting?.index;
   const { dealer: dealerSize, player: playerSize } = useCardSizes();
   const compact = dealerSize <= 52;
@@ -58,6 +58,7 @@ export default function Table({ round, phase, lastNet, rules }) {
           {round?.insurance?.taken && !round?.finished && (
             <div className="rounded-full bg-violet-500/20 px-3 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-violet-200 ring-1 ring-violet-400/30 sm:text-xs">
               Insurance {fmtWJK(round.insurance.stake)} WJK
+              {usdtPerWjk != null && <span className="text-violet-300/70"> (${fmtUsd(round.insurance.stake, usdtPerWjk)})</span>}
             </div>
           )}
           {round?.finished ? (
@@ -76,6 +77,11 @@ export default function Table({ round, phase, lastNet, rules }) {
                   : lastNet < 0
                   ? `NET LOSS  ${fmtWJK(lastNet)} WJK`
                   : "PUSH"}
+                {usdtPerWjk != null && lastNet !== 0 && (
+                  <span className="ml-1 text-base opacity-80 sm:text-lg">
+                    ({lastNet > 0 ? "+" : "-"}${fmtUsd(Math.abs(lastNet), usdtPerWjk)})
+                  </span>
+                )}
               </div>
               {round.insurance?.taken && (
                 <div className="text-center text-[10px] text-white/55 sm:text-xs">
@@ -123,6 +129,7 @@ export default function Table({ round, phase, lastNet, rules }) {
                 <div className="flex flex-wrap items-center justify-center gap-1.5 text-[10px] text-white/45 sm:text-xs">
                   <span className="inline-block h-2.5 w-2.5 rounded-full bg-gradient-to-br from-gold to-gold-dark" />
                   {fmtWJK(h.stake)} WJK
+                  {usdtPerWjk != null && <span className="text-white/30"> (${fmtUsd(h.stake, usdtPerWjk)})</span>}
                   {h.doubled && <span className="text-gold">· 2×</span>}
                   {round.hands.length > 1 && <span className="text-white/30">· {i + 1}</span>}
                   {i === 0 && round.insurance?.taken && (

@@ -1,4 +1,4 @@
-import { fmtWJK, truncate } from "../lib/format.js";
+import { fmtWJK, fmtUsd, truncate } from "../lib/format.js";
 
 function Badge({ children, tone = "gold" }) {
   const tones = {
@@ -18,6 +18,7 @@ export default function WalletBar({
   address,
   walletBalanceSats,
   balanceSats,
+  usdtPerWjk,
   network,
   demoMode,
   connecting,
@@ -73,9 +74,12 @@ export default function WalletBar({
                   <span className="mx-1.5 text-white/25">·</span>
                   <span className="text-gold">{fmtWJK(balanceSats)}</span>
                   <span className="ml-1 text-[10px] font-normal uppercase tracking-wider text-white/35">WJK</span>
-                  <div className="text-[9px] uppercase tracking-wider text-white/35">
-                    Wallet · Table
-                  </div>
+                  {usdtPerWjk != null && (
+                    <div className="text-[9px] font-sans normal-case tracking-normal text-white/35">
+                      ${fmtUsd(walletBalanceSats, usdtPerWjk)} · ${fmtUsd(balanceSats, usdtPerWjk)}
+                    </div>
+                  )}
+                  <div className="text-[9px] uppercase tracking-wider text-white/35">Wallet · Table</div>
                 </div>
               ) : (
                 <>
@@ -83,6 +87,9 @@ export default function WalletBar({
                   <div className="tabular font-display text-xl text-gold">
                     {fmtWJK(balanceSats)} <span className="text-sm text-white/50">WJK</span>
                   </div>
+                  {usdtPerWjk != null && (
+                    <div className="text-[10px] text-white/40">${fmtUsd(balanceSats, usdtPerWjk)}</div>
+                  )}
                 </>
               )}
             </div>

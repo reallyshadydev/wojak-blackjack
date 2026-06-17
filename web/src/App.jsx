@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getWojakProvider, isInstalled } from "./lib/wojak.js";
 import { api } from "./lib/api.js";
-import { fmtWJK, toWJK, formatInsuranceBreakdown } from "./lib/format.js";
+import { fmtWJK, toWJK, formatInsuranceBreakdown, fmtUsd, fmtUsdFromWjk } from "./lib/format.js";
 import { sound } from "./lib/sounds.js";
+import { useWjkPrice } from "./hooks/useWjkPrice.js";
 import WalletBar from "./components/WalletBar.jsx";
 import Table from "./components/Table.jsx";
 import Controls from "./components/Controls.jsx";
@@ -196,6 +197,7 @@ export default function App() {
     : "playing";
   const legalActions = round?.awaiting?.legalActions ?? [];
   const balanceSats = player?.balanceSats ?? 0;
+  const usdtPerWjk = useWjkPrice();
 
   // Keep the bet within balance once connected.
   useEffect(() => {
@@ -209,6 +211,7 @@ export default function App() {
         address={address}
         walletBalanceSats={walletBalanceSats}
         balanceSats={balanceSats}
+        usdtPerWjk={usdtPerWjk}
         network={config?.network}
         demoMode={config?.demoMode}
         connecting={connecting}
@@ -232,7 +235,13 @@ export default function App() {
       <main className="mx-auto grid min-h-0 w-full max-w-6xl flex-1 grid-cols-1 gap-3 px-3 pb-3 pt-2 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-4 lg:px-4">
         <section className="flex min-h-0 flex-col gap-2">
           <div className="flex min-h-0 flex-1 items-stretch">
-            <Table round={round} phase={phase} lastNet={finished ? round.net : 0} rules={config?.rules} />
+            <Table
+              round={round}
+              phase={phase}
+              lastNet={finished ? round.net : 0}
+              rules={config?.rules}
+              usdtPerWjk={usdtPerWjk}
+            />
           </div>
 
           <div className="glass shrink-0 rounded-2xl p-3 sm:p-4">
@@ -250,12 +259,13 @@ export default function App() {
               connected={!!address}
               insurance={round?.insurance}
               evenMoney={round?.awaiting?.evenMoney}
+              usdtPerWjk={usdtPerWjk}
             />
           </div>
         </section>
 
         <aside className="hidden min-h-0 flex-col gap-3 overflow-y-auto pb-1 lg:flex">
-          <HouseCard house={house} demoMode={config?.demoMode} />
+          <HouseCard house={house} demoMode={config?.demoMode} usdtPerWjk={usdtPerWjk} />
           <FairnessPanel
             commitment={round?.fair?.commitment}
             clientSeed={player?.clientSeed}
@@ -294,6 +304,7 @@ export default function App() {
         provider={provider}
         address={address}
         balanceSats={balanceSats}
+        usdtPerWjk={usdtPerWjk}
         toast={toast}
         afterTx={() => refresh()}
       />
@@ -303,10 +314,26 @@ export default function App() {
   );
 }
 
-function HouseCard({ house, demoMode }) {
+function HouseCard({ house, demoMode, usdtPerWjk }) {
   return (
     <div className="glass rounded-2xl p-4">
-      <Stat label="House bankroll" value={house ? `${fmtWJK(house.bankrollSats)} WJK` : "…"} accent />
+      <div>
+        <div className="text-[10px] uppercase tracking-wider text-white/40">House bankroll</div>
+        <div className="tabular font-display text-xl text-gold">
+          {house ? (
+            <>
+              {fmtWJK(house.bankrollSats)} WJK
+              {usdtPerWjk != null && (
+                <span className="ml-1 text-sm font-sans text-white/40">
+                  (${fmtUsd(house.bankrollSats, usdtPerWjk)})
+                </span>
+              )}
+            </>
+          ) : (
+            "…"
+          )}
+        </div>
+      </div>
       {!demoMode && (
         <div className="mt-3 rounded-lg bg-black/25 px-3 py-2 text-[11px] leading-relaxed text-white/45">
           Your wallet and table balances are in the header. Deposit moves WJK on-chain to your table balance; cash out returns it to your wallet.
@@ -362,7 +389,7 @@ function HistoryCard({ history, explorer }) {
   );
 }
 
-function DepositWithdrawModals({ modal, onClose, config, provider, address, balanceSats, toast, afterTx }) {
+function DepositWithdrawModals({ modal, onClose, config, provider, address, balanceSats, usdtPerWjk, toast, afterTx }) {
   const [amount, setAmount] = useState("10");
   const [pending, setPending] = useState(false);
   const demo = config?.demoMode;
@@ -444,6 +471,11 @@ function DepositWithdrawModals({ modal, onClose, config, provider, address, bala
           min="0"
           className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/40 px-3 py-2 font-display text-2xl text-gold outline-none focus:border-gold/50"
         />
+        {usdtPerWjk != null && amountSats > 0 && (
+          <div className="flex items-center px-2 text-sm tabular text-white/45">
+            ≈ ${fmtUsdFromWjk(Number(amount), usdtPerWjk)}
+          </div>
+        )}
         {!isDeposit && (
           <button onClick={() => setAmount(String(max))} className="rounded-lg bg-white/5 px-3 text-sm text-white/60 hover:bg-white/10">
             Max
