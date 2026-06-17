@@ -240,12 +240,7 @@ export default function App() {
         </section>
 
         <aside className="hidden min-h-0 flex-col gap-3 overflow-y-auto pb-1 lg:flex">
-          <HouseCard
-            house={house}
-            walletBalanceSats={walletBalanceSats}
-            balanceSats={balanceSats}
-            demoMode={config?.demoMode}
-          />
+          <HouseCard house={house} demoMode={config?.demoMode} />
           <FairnessPanel
             commitment={round?.fair?.commitment}
             clientSeed={player?.clientSeed}
@@ -293,26 +288,18 @@ export default function App() {
   );
 }
 
-function HouseCard({ house, walletBalanceSats, balanceSats, demoMode }) {
+function HouseCard({ house, demoMode }) {
   return (
     <div className="glass rounded-2xl p-4">
-      <div className={`grid gap-3 ${demoMode ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-3"}`}>
-        {!demoMode && walletBalanceSats != null && (
-          <Stat label="Wallet balance" value={`${fmtWJK(walletBalanceSats)} WJK`} />
-        )}
-        <Stat label={demoMode ? "Your balance" : "Table balance"} value={`${fmtWJK(balanceSats)} WJK`} accent />
-        <Stat label="House bankroll" value={house ? `${fmtWJK(house.bankrollSats)} WJK` : "…"} />
-      </div>
+      <Stat label="House bankroll" value={house ? `${fmtWJK(house.bankrollSats)} WJK` : "…"} accent />
       {!demoMode && (
         <div className="mt-3 rounded-lg bg-black/25 px-3 py-2 text-[11px] leading-relaxed text-white/45">
-          <span className="text-white/65">Wallet</span> is on-chain WJK in your extension.{" "}
-          <span className="text-white/65">Table</span> is your deposited playable balance on the house server — deposit to play, cash out to return funds.
+          Your wallet and table balances are in the header. Deposit moves WJK on-chain to your table balance; cash out returns it to your wallet.
         </div>
       )}
       {demoMode && (
         <div className="mt-3 rounded-lg bg-amber-400/10 px-3 py-2 text-[11px] leading-relaxed text-amber-200/80">
-          Demo mode: you start with a free balance and no real WJK moves. Flip
-          <span className="font-mono"> DEMO_MODE=false </span> and fund the house to go live.
+          Demo mode: free play balance in the header — no real WJK moves.
         </div>
       )}
     </div>

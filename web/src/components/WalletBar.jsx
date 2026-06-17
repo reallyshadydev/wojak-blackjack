@@ -57,20 +57,24 @@ export default function WalletBar({
         {address ? (
           <div className="flex items-center gap-2 sm:gap-3">
             <div className="hidden text-right sm:block">
-              {!demoMode && walletBalanceSats != null && (
+              {!demoMode && walletBalanceSats != null ? (
+                <div className="tabular font-display text-base leading-tight sm:text-lg">
+                  <span className="text-white/55">{fmtWJK(walletBalanceSats)}</span>
+                  <span className="mx-1.5 text-white/25">·</span>
+                  <span className="text-gold">{fmtWJK(balanceSats)}</span>
+                  <span className="ml-1 text-[10px] font-normal uppercase tracking-wider text-white/35">WJK</span>
+                  <div className="text-[9px] uppercase tracking-wider text-white/35">
+                    Wallet · Table
+                  </div>
+                </div>
+              ) : (
                 <>
-                  <div className="text-[10px] uppercase tracking-wider text-white/40">Wallet</div>
-                  <div className="tabular font-display text-lg text-white/75">
-                    {fmtWJK(walletBalanceSats)} <span className="text-xs text-white/45">WJK</span>
+                  <div className="text-[10px] uppercase tracking-wider text-white/40">Balance</div>
+                  <div className="tabular font-display text-xl text-gold">
+                    {fmtWJK(balanceSats)} <span className="text-sm text-white/50">WJK</span>
                   </div>
                 </>
               )}
-              <div className="text-[10px] uppercase tracking-wider text-white/40">
-                {demoMode ? "Balance" : "Table"}
-              </div>
-              <div className="tabular font-display text-xl text-gold">
-                {fmtWJK(balanceSats)} <span className="text-sm text-white/50">WJK</span>
-              </div>
             </div>
             <button
               onClick={onDeposit}
