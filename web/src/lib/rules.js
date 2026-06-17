@@ -10,7 +10,10 @@ export function formatDealerRule(dealerHitsSoft17) {
 }
 
 export function formatTableRules(rules = {}) {
-  const parts = [formatDealerRule(!!rules.dealerHitsSoft17), "INSURANCE NOT OFFERED"];
-  if (rules.doubleAfterSplit === false) parts.splice(1, 0, "NO DOUBLE AFTER SPLIT");
+  const parts = [formatDealerRule(!!rules.dealerHitsSoft17)];
+  if (rules.insuranceOffered !== false) parts.push("INSURANCE 2 TO 1");
+  else parts.push("INSURANCE NOT OFFERED");
+  if (rules.doubleAfterSplit !== false) parts.push("DOUBLE AFTER SPLIT (NOT ACES)");
+  if (rules.noResplitAces !== false) parts.push("NO RESPLIT ACES");
   return parts.join(" · ");
 }

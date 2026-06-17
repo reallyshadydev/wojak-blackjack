@@ -63,6 +63,9 @@ export const config = {
     maxSplits: num(process.env.MAX_SPLITS, DEFAULT_RULES.maxSplits),
     doubleAfterSplit: bool(process.env.DOUBLE_AFTER_SPLIT, DEFAULT_RULES.doubleAfterSplit),
     oneCardAfterSplitAce: bool(process.env.ONE_CARD_AFTER_SPLIT_ACE, DEFAULT_RULES.oneCardAfterSplitAce),
+    noResplitAces: bool(process.env.NO_RESPLIT_ACES, DEFAULT_RULES.noResplitAces),
+    insuranceOffered: bool(process.env.INSURANCE_OFFERED, DEFAULT_RULES.insuranceOffered),
+    insurancePays: num(process.env.INSURANCE_PAYS, DEFAULT_RULES.insurancePays),
   },
 
   corsOrigin: process.env.CORS_ORIGIN ?? "*",

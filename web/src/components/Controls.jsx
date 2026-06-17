@@ -13,8 +13,17 @@ const ACTION_STYLE = {
   stand: "bg-rose-500 text-white hover:bg-rose-400",
   double: "bg-gold text-ink hover:brightness-110",
   split: "bg-sky-400 text-sky-950 hover:bg-sky-300",
+  insurance: "bg-violet-500 text-white hover:bg-violet-400",
+  no_insurance: "bg-white/10 text-white hover:bg-white/15",
 };
-const ACTION_LABEL = { hit: "Hit", stand: "Stand", double: "Double", split: "Split" };
+const ACTION_LABEL = {
+  hit: "Hit",
+  stand: "Stand",
+  double: "Double",
+  split: "Split",
+  insurance: "Insurance",
+  no_insurance: "No thanks",
+};
 
 export default function Controls({
   phase,
@@ -29,26 +38,56 @@ export default function Controls({
   onRebet,
   busy,
   connected,
+  insurance,
 }) {
   const addChip = (wjk) => {
     const next = Math.min(betSats + wjk * 1e8, maxBetSats, balanceSats);
     setBetSats(Math.max(next, 0));
   };
 
+  if (phase === "insurance") {
+    const half = Math.floor(betSats / 2);
+    const order = ["insurance", "no_insurance"];
+    return (
+      <div className="flex flex-col items-center gap-2">
+        <div className="text-center text-xs text-white/55 sm:text-sm">
+          Dealer shows an Ace — take insurance? Pays 2:1 if dealer has blackjack.
+        </div>
+        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+          {order.map((a) => (
+            <button
+              key={a}
+              disabled={busy || !legalActions.includes(a) || (a === "insurance" && balanceSats < half)}
+              onClick={() => onAction(a)}
+              className={`btn-action min-w-[130px] text-base shadow-card ${ACTION_STYLE[a]}`}
+            >
+              {a === "insurance" ? `${ACTION_LABEL[a]} (${fmtWJK(half)})` : ACTION_LABEL[a]}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   if (phase === "playing") {
     const order = ["hit", "stand", "double", "split"];
     return (
-      <div className="flex flex-wrap items-center justify-center gap-3">
+      <div className="flex flex-col items-center gap-2">
+        {insurance?.taken && (
+          <div className="text-xs text-violet-300">Insurance {fmtWJK(insurance.stake)} WJK active</div>
+        )}
+        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
         {order.map((a) => (
           <button
             key={a}
             disabled={busy || !legalActions.includes(a)}
             onClick={() => onAction(a)}
-            className={`btn-action min-w-[110px] text-base shadow-card ${ACTION_STYLE[a]}`}
+            className={`btn-action btn-action-compact min-w-[96px] text-sm shadow-card sm:min-w-[110px] sm:text-base ${ACTION_STYLE[a]}`}
           >
             {ACTION_LABEL[a]}
           </button>
         ))}
+        </div>
       </div>
     );
   }
@@ -57,14 +96,14 @@ export default function Controls({
   const canDeal = connected && betSats >= minBetSats && betSats <= balanceSats && !busy;
 
   return (
-    <div className="flex flex-col items-center gap-3">
-      <div className="flex flex-wrap items-center justify-center gap-3">
+    <div className="flex flex-col items-center gap-2 sm:gap-3">
+      <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
         {CHIPS.map((ch) => (
           <button
             key={ch.v}
             disabled={!connected || busy || betSats + ch.v * 1e8 > balanceSats}
             onClick={() => addChip(ch.v)}
-            className="chip disabled:cursor-not-allowed disabled:opacity-30"
+            className="chip chip-compact disabled:cursor-not-allowed disabled:opacity-30"
             style={{ "--c1": ch.c1, "--c2": ch.c2 }}
             title={`Add ${ch.label} WJK`}
           >
@@ -73,11 +112,14 @@ export default function Controls({
         ))}
       </div>
 
-      <div className="flex flex-wrap items-center justify-center gap-3">
-        <div className="glass flex items-center gap-3 rounded-full px-4 py-2">
-          <span className="text-xs uppercase tracking-wider text-white/40">Bet</span>
-          <span className="tabular font-display text-2xl text-gold">{fmtWJK(betSats)}</span>
+      <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+        <div className="glass flex flex-wrap items-center justify-center gap-x-2 gap-y-1 rounded-full px-3 py-1.5 sm:gap-3 sm:px-4 sm:py-2">
+          <span className="text-[10px] uppercase tracking-wider text-white/40 sm:text-xs">Bet</span>
+          <span className="tabular font-display text-xl text-gold sm:text-2xl">{fmtWJK(betSats)}</span>
           <span className="text-sm text-white/40">WJK</span>
+          {insurance?.taken && (
+            <span className="text-xs text-violet-300 sm:text-sm">+ Ins {fmtWJK(insurance.stake)}</span>
+          )}
           <button
             onClick={() => setBetSats(0)}
             disabled={busy || betSats === 0}
@@ -97,7 +139,7 @@ export default function Controls({
         <button
           onClick={onDeal}
           disabled={!canDeal}
-          className="btn-action min-w-[140px] bg-gradient-to-br from-gold to-gold-dark text-lg font-extrabold text-ink shadow-glow hover:brightness-105"
+          className="btn-action btn-action-compact min-w-[120px] bg-gradient-to-br from-gold to-gold-dark text-base font-extrabold text-ink shadow-glow hover:brightness-105 sm:min-w-[140px] sm:text-lg"
         >
           {phase === "settled" ? "Deal again" : "Deal"}
         </button>

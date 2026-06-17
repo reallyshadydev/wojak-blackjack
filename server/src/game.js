@@ -18,7 +18,11 @@ function deckFor(round) {
 }
 
 /** Legal actions filtered by what the player's bankroll can actually afford. */
-function affordable(legal, betSats, balanceSats) {
+function affordable(awaiting, legal, betSats, balanceSats) {
+  if (awaiting?.phase === "insurance") {
+    const half = Math.floor(betSats / 2);
+    return legal.filter((a) => (a === "insurance" ? balanceSats >= half : true));
+  }
   const canStake = balanceSats >= betSats;
   return legal.filter((a) => (a === "double" || a === "split" ? canStake : true));
 }
@@ -32,7 +36,7 @@ export function viewRound(round, balanceSats) {
   if (state.awaiting) {
     state.awaiting = {
       ...state.awaiting,
-      legalActions: affordable(state.awaiting.legalActions, round.betSats, balanceSats),
+      legalActions: affordable(state.awaiting, state.awaiting.legalActions, round.betSats, balanceSats),
     };
   }
 
@@ -44,6 +48,7 @@ export function viewRound(round, balanceSats) {
     awaiting: state.awaiting,
     dealer: state.dealer,
     hands: state.hands,
+    insurance: state.insurance,
     totalStake: state.totalStake,
     totalReturn: state.totalReturn,
     net: state.net,
@@ -143,7 +148,7 @@ export function applyAction(player, action) {
   const current = playRound(deck, round.actions, { bet: round.betSats, rules: config.rules });
   if (!current.awaiting) throw httpErr(409, "round is not awaiting input");
 
-  const legal = affordable(current.awaiting.legalActions, round.betSats, player.balanceSats);
+  const legal = affordable(current.awaiting, current.awaiting.legalActions, round.betSats, player.balanceSats);
   if (!legal.includes(action)) throw httpErr(400, `illegal action: ${action}`);
 
   // Apply tentatively to learn the new committed stake (double/split add a bet).

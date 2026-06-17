@@ -10,6 +10,7 @@ html,
 body,
 #root {
   height: 100%;
+  overflow: hidden;
 }
 
 body {
@@ -19,6 +20,7 @@ body {
   background:
     radial-gradient(1200px 700px at 50% -10%, #123a26 0%, #0a1c13 45%, #060d09 100%);
   -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
 }
 
 /* ------- Casino felt table ------- */
@@ -146,6 +148,28 @@ body {
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 
+.chip-compact {
+  width: 46px;
+  height: 46px;
+  font-size: 11px;
+}
+
+@media (min-height: 820px) {
+  .chip-compact {
+    width: 52px;
+    height: 52px;
+    font-size: 12px;
+  }
+}
+
+@media (min-height: 920px) {
+  .chip-compact {
+    width: 56px;
+    height: 56px;
+    font-size: 13px;
+  }
+}
+
 /* ------- Action buttons ------- */
 .btn-action {
   position: relative;
@@ -162,6 +186,22 @@ body {
 .btn-action:disabled {
   opacity: 0.35;
   cursor: not-allowed;
+}
+
+.btn-action-compact {
+  padding: 8px 16px;
+}
+
+@media (min-height: 820px) {
+  .btn-action-compact {
+    padding: 10px 20px;
+  }
+}
+
+@media (min-height: 920px) {
+  .btn-action-compact {
+    padding: 12px 22px;
+  }
 }
 
 .glass {

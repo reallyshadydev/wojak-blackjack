@@ -16,6 +16,7 @@ function Badge({ children, tone = "gold" }) {
 export default function WalletBar({
   installed,
   address,
+  walletBalanceSats,
   balanceSats,
   network,
   demoMode,
@@ -27,14 +28,14 @@ export default function WalletBar({
   onDemo,
 }) {
   return (
-    <header className="sticky top-0 z-40 border-b border-gold/10 bg-black/40 backdrop-blur-md">
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
+    <header className="z-40 shrink-0 border-b border-gold/10 bg-black/40 backdrop-blur-md">
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-3 py-2 sm:gap-3 sm:px-4 sm:py-2.5">
         <div className="flex items-center gap-3">
           <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-gold to-gold-dark text-2xl shadow-glow">
             🃏
           </div>
           <div className="leading-tight">
-            <div className="font-display text-2xl tracking-wide">
+            <div className="font-display text-xl tracking-wide sm:text-2xl">
               <span className="gold-text">WOJAK</span>
               <span className="text-white/90"> BLACKJACK</span>
             </div>
@@ -49,7 +50,17 @@ export default function WalletBar({
         {address ? (
           <div className="flex items-center gap-2 sm:gap-3">
             <div className="hidden text-right sm:block">
-              <div className="text-[10px] uppercase tracking-wider text-white/40">Balance</div>
+              {!demoMode && walletBalanceSats != null && (
+                <>
+                  <div className="text-[10px] uppercase tracking-wider text-white/40">Wallet</div>
+                  <div className="tabular font-display text-lg text-white/75">
+                    {fmtWJK(walletBalanceSats)} <span className="text-xs text-white/45">WJK</span>
+                  </div>
+                </>
+              )}
+              <div className="text-[10px] uppercase tracking-wider text-white/40">
+                {demoMode ? "Balance" : "Table"}
+              </div>
               <div className="tabular font-display text-xl text-gold">
                 {fmtWJK(balanceSats)} <span className="text-sm text-white/50">WJK</span>
               </div>

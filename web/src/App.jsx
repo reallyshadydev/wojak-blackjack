@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getWojakProvider, isInstalled } from "./lib/wojak.js";
 import { api } from "./lib/api.js";
-import { fmtWJK, toWJK } from "./lib/format.js";
+import { fmtWJK, formatInsuranceBreakdown } from "./lib/format.js";
 import WalletBar from "./components/WalletBar.jsx";
 import Table from "./components/Table.jsx";
 import Controls from "./components/Controls.jsx";
@@ -21,6 +21,7 @@ export default function App() {
   const [config, setConfig] = useState(null);
   const [house, setHouse] = useState(null);
   const [player, setPlayer] = useState(null);
+  const [walletBalanceSats, setWalletBalanceSats] = useState(null);
 
   const [betSats, setBetSats] = useState(1e8);
   const [busy, setBusy] = useState(false);
@@ -46,15 +47,32 @@ export default function App() {
     });
   }, []);
 
+  const refreshWalletBalance = useCallback(
+    async (p = provider) => {
+      if (!p || config?.demoMode) {
+        setWalletBalanceSats(null);
+        return;
+      }
+      try {
+        const bal = await p.getBalance();
+        setWalletBalanceSats(Number(bal) || 0);
+      } catch {
+        setWalletBalanceSats(null);
+      }
+    },
+    [provider, config?.demoMode]
+  );
+
   const refresh = useCallback(
-    async (addr = address) => {
+    async (addr = address, p = provider) => {
       if (!addr) return;
       const [s, h] = await Promise.all([api.state(addr), api.house().catch(() => house)]);
       setPlayer(s);
       if (h) setHouse(h);
+      await refreshWalletBalance(p);
       return s;
     },
-    [address, house]
+    [address, house, provider, refreshWalletBalance]
   );
 
   const connect = useCallback(async () => {
@@ -89,7 +107,13 @@ export default function App() {
     }
   }, [provider, refresh, toast]);
 
-  // Detect a freshly-settled round to fire a result toast + capture the proof.
+  useEffect(() => {
+    if (address && provider && config && !config.demoMode) {
+      refreshWalletBalance(provider);
+    }
+  }, [address, provider, config, refreshWalletBalance]);
+
+  // Detect a freshly-settled round
   useEffect(() => {
     const r = player?.activeRound;
     if (r?.finished && r.roundId !== prevFinishedId.current) {
@@ -97,10 +121,17 @@ export default function App() {
       setLastSettled(r.fair);
       const net = r.net;
       const bj = r.hands.some((h) => h.result === "blackjack");
+      const breakdown = formatInsuranceBreakdown(r);
       toast({
         tone: net > 0 ? "win" : net < 0 ? "lose" : "info",
         title: bj && net > 0 ? "Blackjack! 🃏" : net > 0 ? "You win!" : net < 0 ? "Dealer wins" : "Push",
-        body: net > 0 ? `+${fmtWJK(net)} WJK` : net < 0 ? `${fmtWJK(net)} WJK` : "Bet returned",
+        body: breakdown
+          ? `${breakdown} · Net ${net > 0 ? "+" : ""}${fmtWJK(net)} WJK`
+          : net > 0
+          ? `+${fmtWJK(net)} WJK`
+          : net < 0
+          ? `${fmtWJK(net)} WJK`
+          : "Bet returned",
       });
       api.house().then(setHouse).catch(() => {});
     }
@@ -145,7 +176,13 @@ export default function App() {
 
   const round = player?.activeRound;
   const finished = !!round?.finished;
-  const phase = !round ? "betting" : finished ? "settled" : "playing";
+  const phase = !round
+    ? "betting"
+    : finished
+    ? "settled"
+    : round?.awaiting?.phase === "insurance"
+    ? "insurance"
+    : "playing";
   const legalActions = round?.awaiting?.legalActions ?? [];
   const balanceSats = player?.balanceSats ?? 0;
 
@@ -155,26 +192,32 @@ export default function App() {
   }, [balanceSats]); // eslint-disable-line
 
   return (
-    <div className="min-h-screen">
+    <div className="flex h-[100dvh] flex-col overflow-hidden">
       <WalletBar
         installed={installed}
         address={address}
+        walletBalanceSats={walletBalanceSats}
         balanceSats={balanceSats}
         network={config?.network}
         demoMode={config?.demoMode}
         connecting={connecting}
         onConnect={connect}
-        onDisconnect={() => setAddress(null)}
+        onDisconnect={() => {
+          setAddress(null);
+          setWalletBalanceSats(null);
+        }}
         onDeposit={() => setModal("deposit")}
         onWithdraw={() => setModal("withdraw")}
         onDemo={playDemo}
       />
 
-      <main className="mx-auto grid max-w-6xl gap-6 px-4 py-6 lg:grid-cols-[1fr_340px]">
-        <section className="flex flex-col gap-6">
-          <Table round={round} phase={phase} lastNet={finished ? round.net : 0} rules={config?.rules} />
+      <main className="mx-auto grid min-h-0 w-full max-w-6xl flex-1 grid-cols-1 gap-3 px-3 pb-3 pt-2 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-4 lg:px-4">
+        <section className="flex min-h-0 flex-col gap-2">
+          <div className="flex min-h-0 flex-1 items-stretch">
+            <Table round={round} phase={phase} lastNet={finished ? round.net : 0} rules={config?.rules} />
+          </div>
 
-          <div className="glass rounded-2xl p-5">
+          <div className="glass shrink-0 rounded-2xl p-3 sm:p-4">
             <Controls
               phase={phase}
               betSats={betSats}
@@ -187,12 +230,18 @@ export default function App() {
               onAction={act}
               busy={busy}
               connected={!!address}
+              insurance={round?.insurance}
             />
           </div>
         </section>
 
-        <aside className="flex flex-col gap-5">
-          <HouseCard house={house} balanceSats={balanceSats} demoMode={config?.demoMode} />
+        <aside className="hidden min-h-0 flex-col gap-3 overflow-y-auto pb-1 lg:flex">
+          <HouseCard
+            house={house}
+            walletBalanceSats={walletBalanceSats}
+            balanceSats={balanceSats}
+            demoMode={config?.demoMode}
+          />
           <FairnessPanel
             commitment={round?.fair?.commitment}
             clientSeed={player?.clientSeed}
@@ -208,7 +257,7 @@ export default function App() {
         </aside>
       </main>
 
-      <footer className="mx-auto max-w-6xl px-4 pb-10 pt-2 text-center text-xs text-white/30">
+      <footer className="hidden shrink-0 border-t border-white/5 px-4 py-1.5 text-center text-[10px] text-white/25 xl:block">
         Provably-fair on-chain blackjack for WojakCoin (WJK).{" "}
         {config?.demoMode
           ? "Running in demo mode — no real funds move."
@@ -232,13 +281,22 @@ export default function App() {
   );
 }
 
-function HouseCard({ house, balanceSats, demoMode }) {
+function HouseCard({ house, walletBalanceSats, balanceSats, demoMode }) {
   return (
     <div className="glass rounded-2xl p-4">
-      <div className="grid grid-cols-2 gap-3">
-        <Stat label="Your balance" value={`${fmtWJK(balanceSats)} WJK`} accent />
+      <div className={`grid gap-3 ${demoMode ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-3"}`}>
+        {!demoMode && walletBalanceSats != null && (
+          <Stat label="Wallet balance" value={`${fmtWJK(walletBalanceSats)} WJK`} />
+        )}
+        <Stat label={demoMode ? "Your balance" : "Table balance"} value={`${fmtWJK(balanceSats)} WJK`} accent />
         <Stat label="House bankroll" value={house ? `${fmtWJK(house.bankrollSats)} WJK` : "…"} />
       </div>
+      {!demoMode && (
+        <div className="mt-3 rounded-lg bg-black/25 px-3 py-2 text-[11px] leading-relaxed text-white/45">
+          <span className="text-white/65">Wallet</span> is on-chain WJK in your extension.{" "}
+          <span className="text-white/65">Table</span> is your deposited playable balance on the house server — deposit to play, cash out to return funds.
+        </div>
+      )}
       {demoMode && (
         <div className="mt-3 rounded-lg bg-amber-400/10 px-3 py-2 text-[11px] leading-relaxed text-amber-200/80">
           Demo mode: you start with a free balance and no real WJK moves. Flip
