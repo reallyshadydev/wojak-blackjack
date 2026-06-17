@@ -26,6 +26,7 @@ export default function WalletBar({
   onDeposit,
   onWithdraw,
   onDemo,
+  onRules,
 }) {
   return (
     <header className="z-40 shrink-0 border-b border-gold/10 bg-black/40 backdrop-blur-md">
@@ -43,6 +44,12 @@ export default function WalletBar({
               <Badge tone="amber">{network === "testnet" ? "Testnet" : "Mainnet"}</Badge>
               <Badge tone={demoMode ? "amber" : "green"}>{demoMode ? "Demo" : "On-chain"}</Badge>
               <span className="text-[10px] uppercase tracking-wider text-white/35">Provably Fair</span>
+              <button
+                onClick={onRules}
+                className="rounded-full border border-white/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white/60 hover:border-gold/50 hover:text-gold"
+              >
+                Rules
+              </button>
             </div>
           </div>
         </div>

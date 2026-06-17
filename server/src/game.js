@@ -14,7 +14,7 @@ let roundSeq = 0;
 const nextId = () => `r${Date.now().toString(36)}${(roundSeq++).toString(36)}`;
 
 function deckFor(round) {
-  return deriveDeck(round.serverSeed, round.clientSeed, round.nonce);
+  return deriveDeck(round.serverSeed, round.clientSeed, round.nonce, round.decks ?? config.rules.decks);
 }
 
 /** Legal actions filtered by what the player's bankroll can actually afford. */
@@ -61,6 +61,7 @@ export function viewRound(round, balanceSats) {
       anchor: round.anchor,
       anchorTxid: round.anchorTxid,
       epochLength: round.epochLength,
+      decks: round.decks ?? config.rules.decks, // shoe size, so the verifier rebuilds the same deck
       // revealed only once the round is over
       serverSeed: state.finished ? round.serverSeed : null,
       deck: state.finished ? deck : null,
@@ -91,6 +92,7 @@ function settle(player, round, state) {
     anchor: round.anchor,
     anchorTxid: round.anchorTxid,
     epochLength: round.epochLength,
+    decks: round.decks ?? config.rules.decks,
     rules: config.rules,
     finishedAt: new Date().toISOString(),
   });
@@ -119,6 +121,7 @@ export async function startRound(player, betSats) {
     anchor: epoch.anchor,
     anchorTxid: epoch.anchorTxid,
     epochLength: epoch.length,
+    decks: config.rules.decks,
     betSats,
     clientSeed: player.clientSeed,
     serverSeed,

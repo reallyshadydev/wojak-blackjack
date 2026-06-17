@@ -11,9 +11,9 @@ export function formatDealerRule(dealerHitsSoft17) {
 
 export function formatTableRules(rules = {}) {
   const parts = [formatDealerRule(!!rules.dealerHitsSoft17)];
+  if (rules.decks) parts.push(`${rules.decks} DECK${rules.decks > 1 ? "S" : ""}`);
+  if (rules.doubleAfterSplit !== false) parts.push("DOUBLE AFTER SPLIT");
+  if (rules.lateSurrender !== false) parts.push("LATE SURRENDER");
   if (rules.insuranceOffered !== false) parts.push("INSURANCE 2 TO 1");
-  else parts.push("INSURANCE NOT OFFERED");
-  if (rules.doubleAfterSplit !== false) parts.push("DOUBLE AFTER SPLIT (NOT ACES)");
-  if (rules.noResplitAces !== false) parts.push("NO RESPLIT ACES");
   return parts.join(" · ");
 }

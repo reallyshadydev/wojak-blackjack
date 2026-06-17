@@ -15,3 +15,6 @@ web/.env
 
 # Local editor/preview tooling
 .claude/
+
+# macOS Finder noise
+.DS_Store

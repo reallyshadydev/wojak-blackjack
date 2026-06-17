@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getWojakProvider, isInstalled } from "./lib/wojak.js";
 import { api } from "./lib/api.js";
-import { fmtWJK, formatInsuranceBreakdown } from "./lib/format.js";
+import { fmtWJK, toWJK, formatInsuranceBreakdown } from "./lib/format.js";
 import WalletBar from "./components/WalletBar.jsx";
 import Table from "./components/Table.jsx";
 import Controls from "./components/Controls.jsx";
 import FairnessPanel from "./components/FairnessPanel.jsx";
 import Modal from "./components/Modal.jsx";
+import RulesModal from "./components/RulesModal.jsx";
 import Toasts from "./components/Toasts.jsx";
 
 const EXTENSION_URL =
@@ -27,6 +28,7 @@ export default function App() {
   const [busy, setBusy] = useState(false);
   const [toasts, setToasts] = useState([]);
   const [modal, setModal] = useState(null); // 'deposit' | 'withdraw'
+  const [rulesOpen, setRulesOpen] = useState(false);
   const [lastSettled, setLastSettled] = useState(null);
 
   const prevFinishedId = useRef(null);
@@ -209,6 +211,7 @@ export default function App() {
         onDeposit={() => setModal("deposit")}
         onWithdraw={() => setModal("withdraw")}
         onDemo={playDemo}
+        onRules={() => setRulesOpen(true)}
       />
 
       <main className="mx-auto grid min-h-0 w-full max-w-6xl flex-1 grid-cols-1 gap-3 px-3 pb-3 pt-2 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-4 lg:px-4">
@@ -231,6 +234,7 @@ export default function App() {
               busy={busy}
               connected={!!address}
               insurance={round?.insurance}
+              evenMoney={round?.awaiting?.evenMoney}
             />
           </div>
         </section>
@@ -264,6 +268,14 @@ export default function App() {
           : "Live mode — settled on-chain by the house wallet."}{" "}
         House: <span className="font-mono">{config?.houseAddress}</span>
       </footer>
+
+      <RulesModal
+        open={rulesOpen}
+        onClose={() => setRulesOpen(false)}
+        rules={config?.rules}
+        minBet={config ? fmtWJK(config.minBetSats) : null}
+        maxBet={config ? fmtWJK(config.maxBetSats) : null}
+      />
 
       <DepositWithdrawModals
         modal={modal}

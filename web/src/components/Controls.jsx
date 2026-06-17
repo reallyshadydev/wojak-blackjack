@@ -13,6 +13,7 @@ const ACTION_STYLE = {
   stand: "bg-rose-500 text-white hover:bg-rose-400",
   double: "bg-gold text-ink hover:brightness-110",
   split: "bg-sky-400 text-sky-950 hover:bg-sky-300",
+  surrender: "bg-white/15 text-white/90 hover:bg-white/25",
   insurance: "bg-violet-500 text-white hover:bg-violet-400",
   no_insurance: "bg-white/10 text-white hover:bg-white/15",
 };
@@ -21,6 +22,7 @@ const ACTION_LABEL = {
   stand: "Stand",
   double: "Double",
   split: "Split",
+  surrender: "Surrender",
   insurance: "Insurance",
   no_insurance: "No thanks",
 };
@@ -39,6 +41,7 @@ export default function Controls({
   busy,
   connected,
   insurance,
+  evenMoney,
 }) {
   const addChip = (wjk) => {
     const next = Math.min(betSats + wjk * 1e8, maxBetSats, balanceSats);
@@ -48,10 +51,17 @@ export default function Controls({
   if (phase === "insurance") {
     const half = Math.floor(betSats / 2);
     const order = ["insurance", "no_insurance"];
+    // Insurance offered to a player who already has blackjack IS "even money".
+    const label = (a) => {
+      if (evenMoney) return a === "insurance" ? "Even money (1:1)" : "Keep 3:2";
+      return a === "insurance" ? `${ACTION_LABEL[a]} (${fmtWJK(half)})` : ACTION_LABEL[a];
+    };
     return (
       <div className="flex flex-col items-center gap-2">
         <div className="text-center text-xs text-white/55 sm:text-sm">
-          Dealer shows an Ace — take insurance? Pays 2:1 if dealer has blackjack.
+          {evenMoney
+            ? "You have blackjack and the dealer shows an Ace — take even money (guaranteed 1:1)?"
+            : "Dealer shows an Ace — take insurance? Pays 2:1 if dealer has blackjack."}
         </div>
         <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
           {order.map((a) => (
@@ -61,7 +71,7 @@ export default function Controls({
               onClick={() => onAction(a)}
               className={`btn-action min-w-[130px] text-base shadow-card ${ACTION_STYLE[a]}`}
             >
-              {a === "insurance" ? `${ACTION_LABEL[a]} (${fmtWJK(half)})` : ACTION_LABEL[a]}
+              {label(a)}
             </button>
           ))}
         </div>
@@ -70,7 +80,7 @@ export default function Controls({
   }
 
   if (phase === "playing") {
-    const order = ["hit", "stand", "double", "split"];
+    const order = ["hit", "stand", "double", "split", "surrender"];
     return (
       <div className="flex flex-col items-center gap-2">
         {insurance?.taken && (

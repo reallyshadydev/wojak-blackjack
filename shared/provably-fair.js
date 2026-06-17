@@ -22,10 +22,11 @@ import { hmacSha256, sha256, fromHex, toHex, utf8 } from "./sha256.js";
 export const RANKS = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K"];
 export const SUITS = ["S", "H", "D", "C"]; // Spades, Hearts, Diamonds, Clubs
 
-/** The 52-card deck in canonical (unshuffled) order, e.g. "AS","2S",... */
-export function orderedDeck() {
+/** Canonical (unshuffled) shoe of `decks` × 52 cards, e.g. "AS","2S",... */
+export function orderedDeck(decks = 1) {
   const deck = [];
-  for (const s of SUITS) for (const r of RANKS) deck.push(r + s);
+  for (let d = 0; d < Math.max(1, decks | 0); d++)
+    for (const s of SUITS) for (const r of RANKS) deck.push(r + s);
   return deck;
 }
 
@@ -100,11 +101,11 @@ function* floatStream(serverSeedHex, clientSeed, nonce) {
 }
 
 /**
- * Deterministically shuffle the 52-card deck for a round.
+ * Deterministically shuffle the shoe (`decks` × 52 cards) for a round.
  * @returns {string[]} the shuffled deck (index 0 is the first card dealt).
  */
-export function deriveDeck(serverSeedHex, clientSeed, nonce) {
-  const deck = orderedDeck();
+export function deriveDeck(serverSeedHex, clientSeed, nonce, decks = 1) {
+  const deck = orderedDeck(decks);
   const floats = floatStream(serverSeedHex, clientSeed, String(nonce));
   // Fisher–Yates from the top down.
   for (let i = deck.length - 1; i > 0; i--) {

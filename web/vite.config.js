@@ -13,8 +13,8 @@ export default defineConfig({
     port: 5173,
     fs: { allow: [path.resolve(__dirname, ".."), path.resolve(__dirname)] },
     proxy: {
-      "/api": { target: "http://localhost:8787", changeOrigin: true },
-      "/chain": { target: "http://localhost:8787", changeOrigin: true },
+      "/api": { target: `http://localhost:${process.env.BACKEND_PORT ?? 8787}`, changeOrigin: true },
+      "/chain": { target: `http://localhost:${process.env.BACKEND_PORT ?? 8787}`, changeOrigin: true },
     },
   },
 });

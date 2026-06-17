@@ -35,7 +35,7 @@ export async function verifyRoundOnChain(fair, chain) {
   // Offline checks (no chain needed): commitment + deck reproduction.
   const computedCommitment = commitment(fair.serverSeed);
   const commitmentOk = computedCommitment === fair.commitment;
-  const deck = deriveDeck(fair.serverSeed, fair.clientSeed, fair.nonce);
+  const deck = deriveDeck(fair.serverSeed, fair.clientSeed, fair.nonce, fair.decks ?? 1);
   const deckOk = fair.deck ? JSON.stringify(deck) === JSON.stringify(fair.deck) : null;
 
   // Chain-rooted checks: read the on-chain anchor and confirm the seed links to it.
